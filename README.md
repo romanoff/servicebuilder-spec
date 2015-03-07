@@ -227,3 +227,50 @@ Address {
   }
 }
 ```
+### Validations
+
+Validations for fields can be added to the model. Here are possible validation types:
+
+|Validation| Description                                         | Parameters      |
+|----------|-----------------------------------------------------|-----------------|
+| present  | validates field content presence                    | none            |
+| min      | validates minimum (details dependant on field type) | int             |
+| max      | validates minimum (details dependant on field type) | int             |
+| max_size | validates maximum file size                         | size (20Mb)     |
+| one_of   | validates that field value is one of enum values    | enum            |
+| uniq     | validates that field is uniq                        | optional scopes |
+
+Here is how validations are defined in service builder:
+
+```
+<Model name (singular)> {
+  validations {
+    <field name>: [<validation>, <validation>, ...]
+    <field name>: [<validation>, <validation>, ...]
+  }
+}
+```
+
+Example:
+
+```
+Document {
+ enum Type {
+    Work
+    Business
+    Travel
+  }
+  fields {
+    name: string
+    description: string
+    document: file
+    type: int
+  }
+  validations {
+    name: [max(20), uniq(type)]
+    description: [min(10])
+    document: [present, max_size(20Mb)]
+    type: [one_of(Document::Type)]
+  }
+}
+```
