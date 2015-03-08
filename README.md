@@ -60,6 +60,35 @@ User {
 ```
 Couple of fields will be automatically added to your model. Such fields as id (unique identifier), created (datetime) and updated (datetime). This fields will be populated automatically for you whenever record is created/updated.
 
+### Pagination
+
+Pagination section is normally used to set per_page and max_per_page for pagination (specifically for index action). Here is syntax:
+
+```
+<Model name (singular)> {
+  pagination {
+    per_page: <int>
+    max_per_page: <int>
+  }
+}
+```
+
+Both per_page and max_per_page are optional. If not specified, defaults will be used. (by default per_page=10, max_per_page=50)
+
+Example:
+
+```
+User {
+  fields {
+    name: string
+  }
+  pagination {
+    per_page: 20
+    max_per_page: 100
+  }
+}
+```
+
 ### Json
 
 Model record has json representation. By default json will return all model fields. But sometimes that's wasteful. In this case you can customize json representations that model has. To do that, you just need to specify what fields will each json representation type have:
