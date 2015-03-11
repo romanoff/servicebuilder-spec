@@ -31,6 +31,7 @@ To store data in model we will need fields. Here are field types that can be rep
 | string   | text field                |
 | date     | date field                |
 | datetime | field with date and time  |
+| bool     | boolean field             |
 | file     | field that contains file  |
 | image    | field that contains image |
 
@@ -303,3 +304,35 @@ Document {
   }
 }
 ```
+### Internationalization
+
+Internationalization can be part of your application. It's specifically intended to translate models data.
+
+Here is how you would specify i18n for model in service builder:
+
+```
+<Model name (singular)> {
+  i18n {
+    default: "<lang>"
+    languages: ["<lang>", "<lang>", ...]
+    fields: ["<field name>", "<field name>", ...]
+    mode: <missing|default>
+  }
+}
+```
+
+In `default` field you need to specify default language. Then in `languages`, specify rest of supported languages. `fields` should contain all the fields that are supposed to be translated to other languages. `mode` has two possible options - `missing` (record is considered missing in language that has no translation) or `default` (if translation is missing for the record, use default language).
+
+### Slugs
+
+You might require slugs for your model records. Here is how you would create them in service builder:
+
+```
+<Model name (singular)> {
+  slug {
+    fields: [<filed name>, <field name>, ...]
+  }
+}
+```
+
+`fields` specify an array of fields that will be used to generate record slug.
