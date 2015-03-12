@@ -364,3 +364,45 @@ User {
 In specified example user will have to log in using email/password.
 
 Authentication adds `password_digest` string field to the model as well as login name string fields (unless they have been already been specified in `fields` section).
+
+### Custom actions
+
+By default each model gets 5 REST actions: `index`, `show`, `create`, `update`, `destroy`. This actions can be customized by selecting only the ones that will be activated:
+
+```
+<Model name (singular)> {
+  actions {
+    rest_actions: [<action name>, <action name>...]
+  }
+}
+```
+
+Example:
+
+```
+User {
+  fields {
+    name: string
+    email: string
+  }
+  actions {
+    rest_actions: [index, show]
+  }
+}
+```
+
+This example will have only `index` and `show` actions for user.
+
+Also custom actions for model can be created.
+
+```
+<Model name (singular)> {
+  actions {
+    <action name> {
+      <code>
+    }
+  }
+}
+```
+
+Custom action should contain service builder code. There should be separate section on code. Action can return json, html or xml. In this case content will be rendered "as is". Or it can return data that eventually can be acted on (application will determine what format has user requested and render it appropriately).
