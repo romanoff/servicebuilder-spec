@@ -336,3 +336,31 @@ You might require slugs for your model records. Here is how you would create the
 ```
 
 `fields` specify an array of fields that will be used to generate record slug.
+
+### Authentication
+
+Authentication mechanism can be added to selected model. Authentication will happen with login_name and password. Login name can be configured to be one of the specified fields (let's say user can use login or email field as login_name).
+
+Here is what the syntax looks like:
+
+```
+<Model name (singular)> {
+  authentication {
+    login_name: [<field name>, <field name>, ...]
+  }
+}
+```
+
+Example:
+
+```
+User {
+  authentication {
+    login_name: [email]
+  }
+}
+```
+
+In specified example user will have to log in using email/password.
+
+Authentication adds `password_digest` string field to the model as well as login name string fields (unless they have been already been specified in `fields` section).
