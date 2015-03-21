@@ -406,3 +406,162 @@ Also custom actions for model can be created.
 ```
 
 Custom action should contain service builder code. There should be separate section on code. Action can return json, html or xml. In this case content will be rendered "as is". Or it can return data that eventually can be acted on (application will determine what format has user requested and render it appropriately).
+
+### Scopes
+
+Scopes allow you to write more specific queries that retrieve only data you want. Scopes can be used in custom actions as well as for permissions restriction. Here is scope syntax:
+
+```
+  <Model name (singular)> {
+    scopes {
+      <scope name>[(param1, param2, ...)] {
+        <query clause>[.<query clause>...]
+      }
+    }
+  }
+```
+
+Example:
+
+```
+User {
+  fields {
+    height: int
+    admin: bool
+  }
+  scopes {
+    admin { where('admin = ?', true) }
+    taller_than(height) {
+      where('height > ?', height)
+    }
+  }
+}
+```
+
+Here are possible query clauses:
+
+| Query cause |
+|-------------|
+| where       |
+| limit       |
+| offset      |
+| order       |
+
+
+### Permissions
+
+Authenticated users have roles. For this roles certain actions might be allowed or not. Or action to resource can be restricted based on current user and query parameters.
+
+Synatx:
+
+```
+  <Model name (singular)> {
+    permissions {
+      <authenticated model name (downcase singular)>{
+        [action|[action1, action2, ...]] {
+          <role>: [true|false|<scope>],
+          <role>: [true|false|<scope>],
+          ...
+        }
+      }
+    }
+  }
+```
+
+Example:
+
+```
+Article {
+  fields {
+    creator_id: int
+  }
+  scopes {
+    for_user(user) {
+      where('creator_id = ?', user.id)
+    }
+  }
+  permissions {
+    user {
+      [update, destroy] {
+        admin { true }
+        editor {
+          for_user(current_user.id)
+        }
+      }
+      show {
+        for_user(current_user.id)
+      }
+    }
+  }
+} 
+```
+
+In this example user is allowed to update and destroy article if user is an admin. If user is editor, he can ony update and destroy article if he is creator. Also show action only works for article creators.
+
+### Routes
+
+Custom routes can be set on model. By default model will have 5 REST actions: `index`, `show`, `create`, `update`, `destroy`. If actions list has been customized, then routes only to selected ones will be present (this can be made in `rest_actions` parameter under `actions`).
+
+Syntax:
+
+```
+<Model name (singular)> {
+  routes {
+    [default: <preserve|override>]
+    <method> '<path>', <action|[action1, action2, ...]>[, <format>: '<format handler>']
+  }
+}
+```
+
+Example:
+
+```
+Album {
+  routes {
+    default: override
+    get '/great_albums/:id', show, html: 'album/show', json: 'customize_album'
+    put '/great_albums/:id', update
+  }
+}
+```
+
+In this example couple of actions will be changed. Instead of using '/albums/:id', `show` and `update` actions will use '/great_albums/:id'. Also show got html as possible output format (what will happen is that all generated json parameters will be send to 'album/show' action of remote server responsible for rendering html and then recieved html will be returned back). Json output for album show action got additional filter. Filters are normally used to transform json into different representation. For example, with filter you can transform following json:
+
+```
+  {users: [{id: 1, name: 'John Doe'}, {id: 2, name: 'Bill Clinton'}]}
+```
+
+Into following json:
+
+```
+  {count: 2,  users: ['John Doe', 'Bill Clinton']}
+```
+
+Filters can be applied one on top of the other. In this case you would use `|` pipe to chain them together.
+
+Example:
+
+```
+customize_album | simple_album_representation
+```
+
+Filters will be applied left to right.
+
+In above example there is also default parameter. If default is not specified, specified routes will replace default REST routes that would be automatically created. `override` mode will override action routes that have been specify in routes section, but the ones that have not been mentioned, will be preserved. Preserve will preserve default REST routes and routes specified in routes section will just be appended.
+
+Filters can also be applied to before json parameters will be send to remote server to render json.
+
+Example:
+
+```
+Album {
+  routes {
+    default: override
+    get '/great_albums/:id', show, html: 'album/show | customize_album'
+    put '/great_albums/:id', update
+  }
+}
+```
+
+In this case `customize_album` filter will be applied to json before data will be send over to remote server to render html.
+
